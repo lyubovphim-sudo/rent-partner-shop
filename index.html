@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rent-a-Partner | แฟนเช่า 6 SKUs</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #e11d48;
+      --primary-hover: #be123c;
+      --border: #e2e8f0;
+      --ok: #15803d;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Prompt', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .brand { font-weight: 700; font-size: 1.05rem; color: var(--primary); }
+    .nav-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      font-size: 0.9rem;
+      background: var(--card);
+      color: var(--text);
+    }
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      font-weight: 500;
+    }
+    button.primary:hover { background: var(--primary-hover); }
+    .container { max-width: 980px; margin: 0 auto; padding: 16px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .card img {
+      width: 100%;
+      height: 260px;
+      object-fit: cover;
+      background: #e2e8f0;
+    }
+    .card-body { padding: 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .sku { font-size: 0.78rem; color: var(--muted); }
+    .name { font-weight: 600; font-size: 1.1rem; }
+    .price { font-weight: 700; color: var(--primary); font-size: 1.05rem; margin-top: auto; padding-top: 6px; }
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    label { display: block; font-size: 0.88rem; margin-top: 10px; font-weight: 500; }
+    input, textarea {
+      width: 100%;
+      font-family: inherit;
+      padding: 9px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-top: 4px;
+      font-size: 0.92rem;
+    }
+    .order-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-top: 10px;
+      background: #fafafa;
+    }
+    .pick-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px dashed #e2e8f0;
+    }
+    .pick-row input[type="checkbox"] { width: auto; margin: 0; }
+    .shipping-label {
+      border: 2px dashed #0f172a;
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 12px;
+      background: #fff;
+    }
+    .badge-ok { color: var(--ok); font-weight: 600; }
+    .hidden { display: none; }
+    @media print {
+      header, .no-print { display: none !important; }
+      body { background: #fff; }
+      .shipping-label { border: 2px solid #000; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">💖 Rent-a-Partner (6 SKUs)</div>
+    <div class="nav-btns">
+      <button onclick="showView('shop')">หน้าร้าน</button>
+      <button onclick="showView('cart')">ตะกร้า (<span id="cart-count">0</span>)</button>
+      <button onclick="showView('wms')">หยิบ-แพ็ค-จ่าหน้า</button>
+      <button onclick="showView('setup')">ตั้งค่า Sheet</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- 1. หน้าร้าน 6 SKUs -->
+    <section id="view-shop">
+      <h2>เลือกโปรไฟล์ที่ถูกใจ</h2>
+      <div id="product-grid" class="grid"></div>
+    </section>
+
+    <!-- 2. ตะกร้าและบันทึกออเดอร์ -->
+    <section id="view-cart" class="panel hidden">
+      <h2>ตะกร้าสินค้าและข้อมูลจัดส่ง</h2>
+      <div id="cart-list"></div>
+      <p><strong>รวมทั้งหมด: <span id="cart-total">0</span> บาท</strong></p>
+
+      <form id="checkout-form" onsubmit="submitOrder(event)">
+        <label>ชื่อผู้รับ</label>
+        <input id="cust-name" required placeholder="เช่น คุณมินตรา" />
+        <label>เบอร์โทรศัพท์</label>
+        <input id="cust-phone" required placeholder="08x-xxx-xxxx" />
+        <label>ที่อยู่จัดส่ง</label>
+        <textarea id="cust-address" rows="2" required placeholder="บ้านเลขที่ ถนน แขวง/ตำบล เขต/อำเภอ จังหวัด"></textarea>
+        <label>รหัสไปรษณีย์</label>
+        <input id="cust-postcode" required placeholder="10110" />
+        <div style="margin-top:14px;">
+          <button type="submit" class="primary">ยืนยันออเดอร์และบันทึกข้อมูล</button>
+        </div>
+      </form>
+      <p id="order-msg" style="margin-top:10px;"></p>
+    
